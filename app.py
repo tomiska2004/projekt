@@ -181,7 +181,7 @@ def superadmin():
     if 'email' not in session or session['email'] != SUPERADMIN_EMAIL:
         return "Unauthorized", 403
 
-    db_files = [f for f in os.listdir('.') if f.startswith('user_') and f.endswith('.db')]
+    db_files = [f for f in os.listdir('.') if f.endswith('.db')]
     return render_template('superadmin.html', db_files=db_files)
 
 @app.route('/download/<filename>')
