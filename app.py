@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 
 MAIN_DB = 'main.db'
-SUPERADMIN_EMAIL = 'admin@example.com'
+SUPERADMIN_EMAIL = 'nandor@gmail.com'
 
 # ---------- MAIN DB SETUP ----------
 def init_main_db():
