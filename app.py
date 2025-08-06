@@ -23,7 +23,6 @@ def init_main_db():
 
 # ---------- USER DB SETUP ----------
 def init_user_db(email):
-    email = email.strip().lower()
 
     db_name = f'user_{email}.db'
     if not os.path.exists(db_name):
