@@ -166,4 +166,5 @@ def update_quantity(coin_id):
 
 if __name__ == '__main__':
     init_main_db()
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5003))
+    app.run(host='0.0.0.0', port=port)
