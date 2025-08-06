@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - Coin Collection</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="w3-light-grey w3-content" style="font-family: Raleway;">
+
+<div class="w3-container w3-padding">
+  <h2 class="w3-center">Admin Panel</h2>
+
+  <form method="POST" action="/add" class="w3-card-4 w3-padding w3-margin-bottom">
+    <h4>Add New Coin</h4>
+    <input class="w3-input w3-margin-top" name="name" placeholder="Name" required>
+    <input class="w3-input w3-margin-top" name="country" placeholder="Country" required>
+    <input class="w3-input w3-margin-top" name="century" placeholder="Century" required>
+    <input class="w3-input w3-margin-top" type="number" name="quantity" placeholder="Quantity" required>
+    <button class="w3-button w3-green w3-margin-top" type="submit">Add Coin</button>
+  </form>
+
+  <table class="w3-table-all w3-card-4">
+    <tr class="w3-dark-grey">
+      <th>Name</th>
+      <th>Country</th>
+      <th>Century</th>
+      <th>Quantity</th>
+      <th>Actions</th>
+    </tr>
+    {% for coin in coins %}
+    <tr>
+      <form method="POST" action="/edit/{{ coin[0] }}">
+        <td><input class="w3-input" name="name" value="{{ coin[1] }}"></td>
+        <td><input class="w3-input" name="country" value="{{ coin[2] }}"></td>
+        <td><input class="w3-input" name="century" value="{{ coin[3] }}"></td>
+        <td><input class="w3-input" type="number" name="quantity" value="{{ coin[4] }}"></td>
+        <td>
+          <button class="w3-button w3-blue" type="submit">Save</button>
+          <a class="w3-button w3-red" href="/delete/{{ coin[0] }}">Delete</a>
+        </td>
+      </form>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="/" class="w3-button w3-black w3-margin-top">Back to User View</a>
+</div>
+
+</body>
+</html>

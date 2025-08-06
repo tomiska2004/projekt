@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Coin Collection</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="w3-light-grey w3-content" style="font-family: Raleway;">
+
+<div class="w3-container w3-padding">
+  <h2 class="w3-center">My Coin Collection</h2>
+
+  <form method="get" class="w3-row w3-margin-bottom">
+    <input class="w3-input w3-third" type="text" name="country" placeholder="Country" value="{{ filters.country }}">
+    <input class="w3-input w3-third" type="text" name="century" placeholder="Century" value="{{ filters.century }}">
+    <input class="w3-input w3-third" type="number" name="quantity" placeholder="Quantity" value="{{ filters.quantity }}">
+    <button class="w3-button w3-black w3-margin-top" type="submit">Filter</button>
+  </form>
+
+  <table class="w3-table-all w3-card-4">
+    <tr class="w3-dark-grey">
+      <th>Name</th>
+      <th>Country</th>
+      <th>Century</th>
+      <th>Quantity</th>
+      <th>Modify</th>
+    </tr>
+    {% for coin in coins %}
+    <tr>
+      <td>{{ coin[1] }}</td>
+      <td>{{ coin[2] }}</td>
+      <td>{{ coin[3] }}</td>
+      <td>{{ coin[4] }}</td>
+      <td>
+        <form method="POST" action="{{ url_for('update_quantity', coin_id=coin[0]) }}" class="w3-row">
+          <input class="w3-input w3-third" type="number" name="quantity" min="0" value="{{ coin[4] }}">
+          <button class="w3-button w3-green w3-third" type="submit">Update</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <a href="/admin" class="w3-button w3-blue w3-margin-top">Go to Admin</a>
+</div>
+
+</body>
+</html>
