@@ -23,6 +23,8 @@ def init_main_db():
 
 # ---------- USER DB SETUP ----------
 def init_user_db(email):
+    email = email.strip().lower()
+
     db_name = f'user_{email}.db'
     if not os.path.exists(db_name):
         with sqlite3.connect(db_name) as conn:
@@ -38,9 +40,10 @@ def init_user_db(email):
     return db_name
 
 def get_user_db():
-    if 'user_id' not in session:
+    if 'email' not in session:
         return None
-    return init_user_db(session['user_id'])
+    return init_user_db(session['email'])
+
 
 def get_useremail_db():
     if 'user_id' not in session:
