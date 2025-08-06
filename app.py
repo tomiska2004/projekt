@@ -54,6 +54,7 @@ def login():
             user = c.fetchone()
             if user and check_password_hash(user[1], password):
                 session['user_id'] = user[0]
+                session['email'] = email
                 return redirect(url_for('index'))
         return render_template('login.html', error='Invalid credentials')
     return render_template('login.html')
@@ -69,6 +70,7 @@ def register():
             conn.commit()
             user_id = c.lastrowid
             session['user_id'] = user_id
+            session['email'] = email
             init_user_db(user_id)
             return redirect(url_for('index'))
     except sqlite3.IntegrityError:
