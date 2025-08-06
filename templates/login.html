@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+</head>
+<body class="w3-light-grey w3-content" style="font-family: Raleway;">
+
+<div class="w3-container w3-padding w3-card w3-white w3-margin">
+  <h2>Login</h2>
+
+  {% if error %}
+    <div class="w3-panel w3-red">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('login') }}">
+    <input class="w3-input w3-margin-bottom" type="email" name="email" placeholder="Email" required>
+    <input class="w3-input w3-margin-bottom" type="password" name="password" placeholder="Password" required>
+    <button class="w3-button w3-black w3-margin-bottom" type="submit">Login</button>
+  </form>
+
+  <hr>
+  <h4>Register</h4>
+  <form method="POST" action="{{ url_for('register') }}">
+    <input class="w3-input w3-margin-bottom" type="email" name="email" placeholder="Email" required>
+    <input class="w3-input w3-margin-bottom" type="password" name="password" placeholder="Password" required>
+    <button class="w3-button w3-blue" type="submit">Register</button>
+  </form>
+</div>
+
+</body>
+</html>

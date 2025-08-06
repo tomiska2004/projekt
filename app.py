@@ -1,27 +1,89 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = 'super_secret_key'
 
-DB_NAME = 'coins.db'
+MAIN_DB = 'main.db'
 
-# ---------- DATABASE SETUP ----------
-def init_db():
-    with sqlite3.connect(DB_NAME) as conn:
+# ---------- MAIN DB SETUP ----------
+def init_main_db():
+    with sqlite3.connect(MAIN_DB) as conn:
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS coins (
+        c.execute('''CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT NOT NULL,
-                        country TEXT NOT NULL,
-                        century TEXT NOT NULL,
-                        quantity INTEGER NOT NULL
+                        email TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL
                     )''')
         conn.commit()
 
-# ---------- ROUTES ----------
+# ---------- USER DB SETUP ----------
+def init_user_db(user_id):
+    db_name = f'user_{user_id}.db'
+    if not os.path.exists(db_name):
+        with sqlite3.connect(db_name) as conn:
+            c = conn.cursor()
+            c.execute('''CREATE TABLE IF NOT EXISTS coins (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            name TEXT NOT NULL,
+                            country TEXT NOT NULL,
+                            century TEXT NOT NULL,
+                            quantity INTEGER NOT NULL
+                        )''')
+            conn.commit()
+    return db_name
+
+def get_user_db():
+    if 'user_id' not in session:
+        return None
+    return init_user_db(session['user_id'])
+
+# ---------- AUTH ROUTES ----------
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        with sqlite3.connect(MAIN_DB) as conn:
+            c = conn.cursor()
+            c.execute("SELECT id, password FROM users WHERE email = ?", (email,))
+            user = c.fetchone()
+            if user and check_password_hash(user[1], password):
+                session['user_id'] = user[0]
+                return redirect(url_for('index'))
+        return render_template('login.html', error='Invalid credentials')
+    return render_template('login.html')
+
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.form['email']
+    password = generate_password_hash(request.form['password'])
+    try:
+        with sqlite3.connect(MAIN_DB) as conn:
+            c = conn.cursor()
+            c.execute("INSERT INTO users (email, password) VALUES (?, ?)", (email, password))
+            conn.commit()
+            user_id = c.lastrowid
+            session['user_id'] = user_id
+            init_user_db(user_id)
+            return redirect(url_for('index'))
+    except sqlite3.IntegrityError:
+        return render_template('login.html', error='User already exists')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# ---------- APP ROUTES ----------
 @app.route('/')
 def index():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    db = get_user_db()
     filters = {
         'country': request.args.get('country', ''),
         'century': request.args.get('century', ''),
@@ -40,7 +102,7 @@ def index():
         query += " AND quantity = ?"
         params.append(filters['quantity'])
 
-    with sqlite3.connect(DB_NAME) as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         c.execute(query, params)
         coins = c.fetchall()
@@ -48,7 +110,10 @@ def index():
 
 @app.route('/admin')
 def admin():
-    with sqlite3.connect(DB_NAME) as conn:
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    db = get_user_db()
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         c.execute("SELECT * FROM coins")
         coins = c.fetchall()
@@ -56,11 +121,12 @@ def admin():
 
 @app.route('/add', methods=['POST'])
 def add_coin():
+    db = get_user_db()
     name = request.form['name']
     country = request.form['country']
     century = request.form['century']
     quantity = int(request.form['quantity'])
-    with sqlite3.connect(DB_NAME) as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         c.execute("INSERT INTO coins (name, country, century, quantity) VALUES (?, ?, ?, ?)", (name, country, century, quantity))
         conn.commit()
@@ -68,11 +134,12 @@ def add_coin():
 
 @app.route('/edit/<int:coin_id>', methods=['POST'])
 def edit_coin(coin_id):
+    db = get_user_db()
     name = request.form['name']
     country = request.form['country']
     century = request.form['century']
     quantity = int(request.form['quantity'])
-    with sqlite3.connect(DB_NAME) as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         c.execute("UPDATE coins SET name=?, country=?, century=?, quantity=? WHERE id=?", (name, country, century, quantity, coin_id))
         conn.commit()
@@ -80,7 +147,8 @@ def edit_coin(coin_id):
 
 @app.route('/delete/<int:coin_id>')
 def delete_coin(coin_id):
-    with sqlite3.connect(DB_NAME) as conn:
+    db = get_user_db()
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         c.execute("DELETE FROM coins WHERE id=?", (coin_id,))
         conn.commit()
@@ -88,13 +156,14 @@ def delete_coin(coin_id):
 
 @app.route('/update_quantity/<int:coin_id>', methods=['POST'])
 def update_quantity(coin_id):
+    db = get_user_db()
     quantity = int(request.form['quantity'])
-    with sqlite3.connect(DB_NAME) as conn:
+    with sqlite3.connect(db) as conn:
         c = conn.cursor()
         c.execute("UPDATE coins SET quantity=? WHERE id=?", (quantity, coin_id))
         conn.commit()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    init_db()
+    init_main_db()
     app.run(debug=True)
