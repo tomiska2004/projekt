@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 
 MAIN_DB = 'main.db'
+SUPERADMIN_EMAIL = 'admin@example.com'
 
 # ---------- MAIN DB SETUP ----------
 def init_main_db():
@@ -163,6 +164,24 @@ def update_quantity(coin_id):
         c.execute("UPDATE coins SET quantity=? WHERE id=?", (quantity, coin_id))
         conn.commit()
     return redirect(url_for('index'))
+
+
+# ---------- SUPERADMIN PANEL ----------
+@app.route('/superadmin')
+def superadmin():
+    if 'email' not in session or session['email'] != SUPERADMIN_EMAIL:
+        return "Unauthorized", 403
+
+    db_files = [f for f in os.listdir('.') if f.startswith('user_') and f.endswith('.db')]
+    return render_template('superadmin.html', db_files=db_files)
+
+@app.route('/download/<filename>')
+def download_db(filename):
+    if 'email' not in session or session['email'] != SUPERADMIN_EMAIL:
+        return "Unauthorized", 403
+    if not filename.startswith("user_") or not filename.endswith(".db"):
+        return "Invalid file", 400
+    return send_file(filename, as_attachment=True)
 
 if __name__ == '__main__':
     init_main_db()

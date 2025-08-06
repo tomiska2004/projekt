@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Superadmin Panel</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+</head>
+<body class="w3-light-grey" style="font-family: Raleway;">
+
+<div class="w3-container w3-padding">
+  <h2 class="w3-center">Superadmin Panel</h2>
+
+  <div class="w3-panel w3-card w3-white w3-padding">
+    <h4>User Databases</h4>
+    <ul class="w3-ul w3-border">
+      {% for db in db_files %}
+        <li>
+          {{ db }}
+          <a class="w3-button w3-small w3-blue w3-right" href="{{ url_for('download_db', filename=db) }}">Download</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <a class="w3-button w3-black w3-margin-top" href="/">Back to App</a>
+</div>
+
+</body>
+</html>
