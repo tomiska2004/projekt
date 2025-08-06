@@ -22,8 +22,8 @@ def init_main_db():
         conn.commit()
 
 # ---------- USER DB SETUP ----------
-def init_user_db(user_id):
-    db_name = f'user_{user_id}.db'
+def init_user_db(email):
+    db_name = f'user_{email}.db'
     if not os.path.exists(db_name):
         with sqlite3.connect(db_name) as conn:
             c = conn.cursor()
@@ -42,6 +42,10 @@ def get_user_db():
         return None
     return init_user_db(session['user_id'])
 
+def get_useremail_db():
+    if 'user_id' not in session:
+        return None
+    return init_user_db(session['email'])
 # ---------- AUTH ROUTES ----------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
